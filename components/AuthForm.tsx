@@ -58,7 +58,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 	const isSignIn = type === "sign-in";
 
 	return (
-		<div className="card-section lg:min-w-[566px]">
+		<div className="card-section lg:min-w-[566px] lg:border-red-gradient">
 			<div className="flex flex-col gap-6 ">
 				<div className="flex flex-row gap-1 justify-center">
 					<Image src="/logo.svg" alt="logo" width={36} height={36} />

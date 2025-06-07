@@ -14,6 +14,7 @@
 	--color-primary-200: #fcbdbd; /* slightly darker than #ffd6d6 */
 	--color-primary-300: #ff6b6b;
 	--color-primary-400: #e04444; /* darker and richer than #ff6b6b */
+	--color-primary-500: #e31836;
 
 	--color-light-100: #121212; /* Very dark gray, near black */
 	--color-light-200: #f5f5f5; /* very light gray */
@@ -270,6 +271,39 @@
 	}
 }
 
+@layer utilities {
+	.rainbow-border-wrapper {
+		@apply relative inline-block rounded-full p-[2px]; /* space for border */
+		background: linear-gradient(
+			270deg,
+			#ff0000,
+			#ff9900,
+			#ffff00,
+			#00ff00,
+			#0000ff,
+			#4b0082,
+			#ee82ee,
+			#ff0000
+		);
+		background-size: 300% 300%;
+		animation: rainbowFlow 5s linear infinite;
+	}
+
+	.rainbow-border-inner {
+		@apply rounded-full block;
+		background: white; /* fallback inside */
+	}
+
+	@keyframes rainbowFlow {
+		0% {
+			background-position: 0% 50%;
+		}
+		100% {
+			background-position: 100% 50%;
+		}
+	}
+}
+
 @utility flex-center {
 	@apply flex items-center justify-center;
 }
@@ -294,10 +328,6 @@
 	@apply bg-gradient-to-l from-[#FFFFFF] to-[#CAC5FE];
 }
 
-@utility flex-center {
-	@apply flex items-center justify-center;
-}
-
 @utility animate-fadeIn {
 	animation: fadeIn 0.3s ease-in-out;
 }
@@ -311,13 +341,14 @@
 }
 
 @utility border-red-gradient {
-	border-image: linear-gradient(to right, #ef4444, #dc2626, #b91c1c) 1;
+	/* border-image: linear-gradient(to right, #ef4444, #dc2626, #b91c1c) 1; */
+	border-image: linear-gradient(to right, #fcbdbd, #ff6b6b, #fcbdbd) 1;
 	border-style: solid;
 	border-width: 2px;
 }
 
 @utility btn-red-gradient {
-	@apply bg-gradient-to-r from-red-500 via-red-600 to-red-700 text-white font-semibold px-6 py-3 rounded-full shadow-md hover:brightness-110 transition;
+	@apply bg-gradient-to-r from-red-400 via-red-500 to-red-600 text-white font-semibold px-6 py-3 rounded-full shadow-md hover:brightness-110 transition;
 }
 
 @keyframes fadeIn {
