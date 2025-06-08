@@ -1,4 +1,10 @@
+import FeaturesSection from "@/components/FeaturesSection";
+import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
+import PricingSection from "@/components/PricingSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import React from "react";
 
 const Landing = () => {
@@ -9,7 +15,49 @@ const Landing = () => {
 					Start your IELTS journey today
 				</p>
 			</div>
+
 			<NavBar />
+
+			<section className="text-center bg-white">
+				<div className="relative">
+					<Image
+						src="/confetti-bg.png" // replace with your confetti pattern
+						alt="Confetti Background"
+						fill
+						className="object-cover pointer-events-none z-0"
+					/>
+					<div className="relative z-10 pt-5 pb-10">
+						<Image
+							src="/grad-cap.svg"
+							alt="Cap"
+							width={70}
+							height={70}
+							className="mx-auto mb-6"
+						/>
+						<h1 className="text-2xl font-extrabold">
+							Achieve your desired
+							<br />
+							band score with BandWise
+						</h1>
+						{/* <button className="mt-6 px-6 py-3 rounded-full bg-red-500 text-white hover:brightness-110 transition font-semibold">
+							Begin now
+						</button> */}
+						<div className="rainbow-border-wrapper overflow-hidden mt-6 ">
+							<Button className="bg-red-500 font-semibold !rounded-full !px-6 !py-3 w-full h-full">
+								Get Started
+							</Button>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<FeaturesSection />
+
+			<TestimonialsSection />
+
+			<PricingSection />
+
+			<Footer />
 		</main>
 	);
 };

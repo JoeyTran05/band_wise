@@ -14,8 +14,8 @@ import {
 	DrawerClose,
 } from "@/components/ui/drawer";
 import DropDownMenu from "./DropDownMenu";
-import { useEffect } from "react";
-import { useState } from "react";
+// import { useEffect } from "react";
+// import { useState } from "react";
 
 const navItems = [
 	{ label: "Mock Tests", href: "/mock-tests" },
@@ -32,30 +32,34 @@ const mockTestItems = [
 ];
 
 export default function NavBar() {
-	const [isLargeMenuOpen, setIsLargeMenuOpen] = useState(true);
-	useEffect(() => {
-		const mediaQuery = window.matchMedia("(min-width: 1024px)");
-		if (mediaQuery.matches) {
-			setIsLargeMenuOpen(true);
-		}
-	}, []);
+	// const [isLargeMenuOpen, setIsLargeMenuOpen] = useState(true);
+	// useEffect(() => {
+	// 	const mediaQuery = window.matchMedia("(min-width: 1024px)");
+	// 	if (mediaQuery.matches) {
+	// 		setIsLargeMenuOpen(true);
+	// 	}
+	// }, []);
 
 	return (
 		<div className="flex items-center justify-between border-b p-4 pl-2 lg:pl-[calc(theme(spacing.6))] lg:ml-[--sidebar-width]">
 			{/* Large screen menu */}
 			<div className="flex items-center gap-2">
 				<Drawer
-					open={isLargeMenuOpen}
-					onOpenChange={setIsLargeMenuOpen}
+					// open={isLargeMenuOpen}
+					// onOpenChange={setIsLargeMenuOpen}
 					direction="left"
-					modal={false}
+					// modal={false}
 				>
 					<DrawerTrigger className="hidden lg:flex" asChild>
 						<Button variant="ghost" size="icon">
 							<Menu className="h-6 w-6" />
 						</Button>
 					</DrawerTrigger>
-					<DrawerContent className="hidden lg:relative lg:top-0 lg:left-0 lg:flex">
+					<DrawerContent
+						// className="hidden lg:flex absolute h-full mt-28"
+						// className="hidden lg:flex absolute h-full mt-28 lg:w-[--sidebar-width] lg:translate-x-0 translate-x-[-100%] transition-transform duration-300"
+						className="hidden lg:flex"
+					>
 						<div className="p-4">
 							<DrawerHeader>
 								<DrawerTitle>Menu</DrawerTitle>

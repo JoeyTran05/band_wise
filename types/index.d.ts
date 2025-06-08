@@ -102,3 +102,9 @@ interface DropDownMenuProps {
 	trigger: React.ReactNode;
 	content: React.ReactNode;
 }
+
+interface FeatureCardProps {
+	title: string;
+	description: string;
+	icon: LucideIcon;
+}
