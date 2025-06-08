@@ -97,3 +97,8 @@ type FormType = "sign-in" | "sign-up";
 // interface TechIconProps {
 //   techStack: string[];
 // }
+
+interface DropDownMenuProps {
+	trigger: React.ReactNode;
+	content: React.ReactNode;
+}
