@@ -31,7 +31,7 @@ const mockTestItems = [
 	{ label: "Speaking", href: "/mock-tests/speaking" },
 ];
 
-const NavBar = () => {
+const LandingNavBar = () => {
 	return (
 		<div className="flex items-center justify-between max-w-7xl mx-auto border-b p-4">
 			<div className="flex items-center gap-2">
@@ -144,24 +144,24 @@ const NavBar = () => {
 			</div>
 
 			{/* Center section navigation links */}
-			<div className="hidden lg:flex flex-1 justify-center pr-30 gap-15">
+			<div className="hidden lg:flex flex-1 justify-center pr-5 gap-6">
 				<Link
-					href="/dashboard"
+					href="#features"
 					className="text-gray-700 hover:text-red-500 transition"
 				>
-					Dashboard
+					Features
 				</Link>
 				<Link
-					href="/learning"
+					href="#testimonials"
 					className="text-gray-700 hover:text-red-500 transition"
 				>
-					Learning
+					Testimonials
 				</Link>
 				<Link
-					href="/results"
+					href="#pricing"
 					className="text-gray-700 hover:text-red-500 transition"
 				>
-					Results
+					Study Plans
 				</Link>
 			</div>
 
@@ -175,9 +175,12 @@ const NavBar = () => {
 				<SignedIn>
 					<UserButton />
 				</SignedIn>
+				<Link href="#pricing">
+					<Button className="btn-red-gradient">Get Started</Button>
+				</Link>
 			</div>
 		</div>
 	);
 };
 
-export default NavBar;
+export default LandingNavBar;

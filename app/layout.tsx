@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Work_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -19,11 +20,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body className={`${workSans.className} antialiased`}>
-				{children}
-				<Toaster />
-			</body>
-		</html>
+		<ClerkProvider appearance={{ variables: { colorPrimary: "#EF4444" } }}>
+			<html lang="en">
+				<body className={`${workSans.className} antialiased`}>
+					{children}
+					<Toaster />
+				</body>
+			</html>
+		</ClerkProvider>
 	);
 }

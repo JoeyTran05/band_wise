@@ -1,6 +1,6 @@
 import { CheckCircle, Rocket, Star, Users } from "lucide-react";
 import { Button } from "./ui/button";
-import Link from "next/link";
+import { SignInButton } from "@clerk/nextjs";
 
 const plans = [
 	{
@@ -91,20 +91,20 @@ const PricingSection = () => {
 							</ul>
 							{title === "Premium Plan" ? (
 								<div className="rainbow-border-wrapper overflow-hidden mt-6 ">
-									<Link href={"/sign-up"}>
+									<SignInButton>
 										<Button className="bg-red-500 font-semibold !rounded-full !px-6 !py-3 w-full h-full">
 											Upgrade
 										</Button>
-									</Link>
+									</SignInButton>
 								</div>
 							) : (
-								<Link href={"/sign-up"}>
+								<SignInButton>
 									<Button className="mt-6 w-full px-4 py-2 bg-red-500 text-white rounded-full hover:brightness-110 transition">
 										{title === "Free Plan"
 											? "Get Started"
 											: "Upgrade"}
 									</Button>
-								</Link>
+								</SignInButton>
 							)}
 						</div>
 					))}
