@@ -5,6 +5,7 @@ import PricingSection from "@/components/PricingSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 const Landing = () => {
@@ -43,9 +44,11 @@ const Landing = () => {
 							Begin now
 						</button> */}
 						<div className="rainbow-border-wrapper overflow-hidden mt-6 ">
-							<Button className="bg-red-500 font-semibold !rounded-full !px-6 !py-3 w-full h-full">
-								Get Started
-							</Button>
+							<Link href="#pricing">
+								<Button className="bg-red-500 font-semibold !rounded-full !px-6 !py-3 w-full h-full">
+									Get Started
+								</Button>
+							</Link>
 						</div>
 					</div>
 				</div>

@@ -29,6 +29,7 @@
 	--font-work-sans: "Inter", sans-serif;
 
 	--bg-pattern: url("/pattern.png");
+	--bg-confetti: url("/confetti-bg.png");
 }
 
 :root {
@@ -141,6 +142,9 @@
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
+	}
+	html {
+		scroll-behavior: smooth;
 	}
 	body {
 		@apply bg-background text-foreground;

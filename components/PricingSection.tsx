@@ -1,5 +1,6 @@
 import { CheckCircle, Rocket, Star, Users } from "lucide-react";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 const plans = [
 	{
@@ -47,7 +48,7 @@ const plans = [
 
 const PricingSection = () => {
 	return (
-		<section className="mt-5 mb-20 bg-white">
+		<section id="pricing" className="mt-5 mb-20 bg-white">
 			<div className="max-w-7xl mx-auto px-6 text-center">
 				<h2 className="text-3xl font-bold mb-4 text-gray-900">
 					Choose Your Study Plan
@@ -88,12 +89,23 @@ const PricingSection = () => {
 									</li>
 								))}
 							</ul>
-
-							<Button className="mt-6 w-full px-4 py-2 bg-red-500 text-white rounded-full hover:brightness-110 transition">
-								{title === "Free Plan"
-									? "Get Started"
-									: "Upgrade"}
-							</Button>
+							{title === "Premium Plan" ? (
+								<div className="rainbow-border-wrapper overflow-hidden mt-6 ">
+									<Link href={"/sign-up"}>
+										<Button className="bg-red-500 font-semibold !rounded-full !px-6 !py-3 w-full h-full">
+											Upgrade
+										</Button>
+									</Link>
+								</div>
+							) : (
+								<Link href={"/sign-up"}>
+									<Button className="mt-6 w-full px-4 py-2 bg-red-500 text-white rounded-full hover:brightness-110 transition">
+										{title === "Free Plan"
+											? "Get Started"
+											: "Upgrade"}
+									</Button>
+								</Link>
+							)}
 						</div>
 					))}
 				</div>

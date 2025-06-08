@@ -25,7 +25,7 @@ const testimonials = [
 
 const TestimonialsSection = () => {
 	return (
-		<section className="py-16">
+		<section id="testimonials" className="py-16">
 			<h2 className="text-center text-xl font-bold mb-8">
 				Join our community of aspiring test-takers
 			</h2>

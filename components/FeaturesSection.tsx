@@ -88,7 +88,7 @@ const features = [
 
 export default function FeatureSection() {
 	return (
-		<section className="py-16 bg-gray-50">
+		<section id="features" className="py-16 bg-gray-50">
 			<div className="max-w-7xl mx-auto px-6 text-center">
 				<h2 className="text-3xl font-bold mb-4">Why BandWise?</h2>
 				<p className="text-gray-600 mb-10">

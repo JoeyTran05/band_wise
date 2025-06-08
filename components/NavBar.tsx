@@ -162,15 +162,36 @@ export default function NavBar() {
 				</Link>
 			</div>
 
+			{/* Center section navigation links */}
+			<div className="hidden lg:flex items-center justify-between pl-10 gap-6">
+				<Link
+					href="#features"
+					className="text-gray-700 hover:text-red-500 transition"
+				>
+					Features
+				</Link>
+				<Link
+					href="#testimonials"
+					className="text-gray-700 hover:text-red-500 transition"
+				>
+					Testimonials
+				</Link>
+				<Link
+					href="#pricing"
+					className="text-gray-700 hover:text-red-500 transition"
+				>
+					Study Plans
+				</Link>
+			</div>
+
 			{/* Right-side actions */}
 			<div className="flex items-center gap-2">
-				<Button variant="ghost">Sign In</Button>
-				<Button className="btn-red-gradient">Get Started</Button>
-				{/* <div className="rainbow-border-wrapper overflow-hidden">
-						<Button className="bg-primary-400  !rounded-full !px-6 !py-3 w-full h-full">
-							Get Started
-						</Button>
-					</div> */}
+				<Link href="/sign-in">
+					<Button variant="ghost">Sign In</Button>
+				</Link>
+				<Link href="#pricing">
+					<Button className="btn-red-gradient">Get Started</Button>
+				</Link>
 			</div>
 		</div>
 	);
