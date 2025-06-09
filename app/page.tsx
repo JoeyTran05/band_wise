@@ -4,11 +4,15 @@ import LandingNavBar from "@/components/LandingNavBar";
 import PricingSection from "@/components/PricingSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import { Button } from "@/components/ui/button";
+import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const Landing = () => {
+const Landing = async () => {
+	const { userId } = await auth();
+	const isSignedIn = !!userId;
+
 	return (
 		<main>
 			<div className="bg-primary max-h-lg">
@@ -44,9 +48,11 @@ const Landing = () => {
 							Begin now
 						</button> */}
 						<div className="rainbow-border-wrapper overflow-hidden mt-6 ">
-							<Link href="#pricing">
+							<Link href={isSignedIn ? "/dashboard" : "#pricing"}>
 								<Button className="bg-red-500 font-semibold !rounded-full !px-6 !py-3 w-full h-full">
-									Get Started
+									{isSignedIn
+										? "Go to Dashboard"
+										: "Get Started"}
 								</Button>
 							</Link>
 						</div>

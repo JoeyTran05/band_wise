@@ -1,3 +1,5 @@
+import ProgressChart from "@/components/ProgressChart";
+// import { auth, clerkClient } from "@clerk/nextjs/server";
 import {
 	BarChart3,
 	BookOpen,
@@ -8,30 +10,34 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const page = () => {
+const Dashboard = async () => {
+	// const { userId } = await auth();
+
+	// const client = await clerkClient();
+	// const user = await client.users.getUser(userId);
+
 	return (
 		<main className="p-6 space-y-8 max-w-6xl mx-auto">
 			{/* Header */}
-			<h1 className="text-3xl font-bold">Welcome back, Student!</h1>
+			<h1 className="text-3xl font-bold">Welcome back, student!</h1>
 
 			{/* Progress Chart Placeholder */}
-			<section className="bg-white p-6 rounded-lg shadow-md">
+			<section className="bg-zinc-900 p-6 rounded-lg shadow-md">
 				<div className="flex items-center gap-2 mb-4">
 					<BarChart3 className="text-primary-500" />
-					<h2 className="text-xl font-semibold">Your Progress</h2>
+					<h2 className="text-xl font-semibold text-white">
+						Your Progress
+					</h2>
 				</div>
-				<div className="h-48 bg-gray-100 rounded flex items-center justify-center">
-					{/* Replace with actual chart later */}
-					<p className="text-gray-500">
-						[Progress Chart Placeholder]
-					</p>
+				<div className=" bg-zinc-800 rounded">
+					<ProgressChart />
 				</div>
 			</section>
 
 			{/* Test Actions */}
 			<section className="grid grid-cols-1 md:grid-cols-2 gap-6">
 				<Link
-					href="/mock-tests"
+					href="/take-tests"
 					className="bg-primary-50 p-6 rounded-lg shadow hover:bg-primary-100 transition"
 				>
 					<div className="flex items-center gap-2 mb-2">
@@ -89,4 +95,4 @@ const page = () => {
 	);
 };
 
-export default page;
+export default Dashboard;
