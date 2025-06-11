@@ -25,10 +25,10 @@ const navItems = [
 ];
 
 const mockTestItems = [
+	{ label: "Speaking", href: "/mock-tests/speaking" },
+	{ label: "Writing", href: "/mock-tests/writing" },
 	{ label: "Listening", href: "/mock-tests/listening" },
 	{ label: "Reading", href: "/mock-tests/reading" },
-	{ label: "Writing", href: "/mock-tests/writing" },
-	{ label: "Speaking", href: "/mock-tests/speaking" },
 ];
 
 const NavBar = () => {
@@ -129,7 +129,7 @@ const NavBar = () => {
 					</DrawerContent>
 				</Drawer>
 
-				<Link href="/" className="flex items-center gap-1">
+				<Link href="/dashboard" className="flex items-center gap-1">
 					<Image
 						src="/logo.svg"
 						alt="Logo"
@@ -144,7 +144,7 @@ const NavBar = () => {
 			</div>
 
 			{/* Center section navigation links */}
-			<div className="hidden lg:flex flex-1 justify-center pr-30 gap-15">
+			<div className="hidden lg:flex flex-1 justify-center pr-40 gap-15">
 				<Link
 					href="/dashboard"
 					className="text-gray-700 hover:text-red-500 transition"
@@ -152,10 +152,10 @@ const NavBar = () => {
 					Dashboard
 				</Link>
 				<Link
-					href="/learning"
+					href="/take-tests"
 					className="text-gray-700 hover:text-red-500 transition"
 				>
-					Learning
+					Take Tests
 				</Link>
 				<Link
 					href="/results"

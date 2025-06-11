@@ -101,6 +101,7 @@ type FormType = "sign-in" | "sign-up";
 interface DropDownMenuProps {
 	trigger: React.ReactNode;
 	content: React.ReactNode;
+	defaultValue?: string;
 }
 
 interface FeatureCardProps {

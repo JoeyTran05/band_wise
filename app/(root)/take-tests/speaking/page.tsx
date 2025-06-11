@@ -13,13 +13,13 @@ import {
 import { Mic, Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { RedirectToSignIn, useUser } from "@clerk/nextjs";
 import {
 	getCompletedSpeakingSets,
 	getSpeakingSets,
 } from "@/lib/actions/test.action";
-// import { createSupabaseClient } from "@/lib/supabase";
-// import { currentUser } from "@clerk/nextjs/server";
+import DropDownMenu from "@/components/DropDownMenu";
+import MicTest from "@/components/MicTest";
 
 type SpeakingSet = {
 	id: number;
@@ -29,17 +29,18 @@ type SpeakingSet = {
 const SpeakingTestSession = () => {
 	const [speakingSets, setSpeakingSets] = useState<SpeakingSet[]>([]);
 	const [numberOfSets, setNumberOfSets] = useState<number>(0);
-	const [selectedSetId, setSelectedSetId] = useState<string | null>(null);
+	const [showTips, setShowTips] = useState<boolean>(true);
+	const [testMode, setTestMode] = useState("full");
+	const [selectedSetId, setSelectedSetId] = useState<string>("random");
 	const [completedCount, setCompletedCount] = useState<number>(0);
 	const router = useRouter();
-	const { user } = useUser();
+	const { user, isSignedIn } = useUser();
 
 	useEffect(() => {
 		if (!user) return;
 
 		const fetchData = async () => {
 			const { sets, uniqueSets } = await getSpeakingSets();
-			console.log(user);
 			setNumberOfSets(sets.length);
 			setSpeakingSets(uniqueSets);
 
@@ -50,14 +51,31 @@ const SpeakingTestSession = () => {
 		fetchData();
 	}, [user]);
 
+	useEffect(() => {
+		const screenWidth = window.innerWidth;
+		console.log("Screen width:", screenWidth);
+		if (screenWidth < 768) {
+			setShowTips(false);
+		}
+	}, []);
+
+	if (!isSignedIn) {
+		return <RedirectToSignIn />;
+	}
+
 	const handleSetChange = (value: string) => {
 		setSelectedSetId(value);
 	};
 
-	const handleTestChange = (value: string) => {};
+	const handleTestChange = (value: string) => {
+		setTestMode(value);
+	};
 
 	const startTest = () => {
-		const idToUse = selectedSetId === "random" ? "random" : selectedSetId;
+		const idToUse =
+			selectedSetId === "random"
+				? `${completedCount + 1}`
+				: selectedSetId;
 		router.push(`/speaking-test/${idToUse}`);
 	};
 
@@ -79,16 +97,29 @@ const SpeakingTestSession = () => {
 				Choose a test set and review the format before beginning.
 			</p>
 
-			{/* Progress Badge */}
-			<div className="flex justify-end">
-				<span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
-					{completedCount} of {numberOfSets || "?"} completed
-				</span>
+			<div className="flex justify-between items-center">
+				{/* Microphone Test Button */}
+				{/* <Button
+					variant="outline"
+					className=" md:w-auto"
+					onClick={testMicrophone}
+				>
+					<Mic className="w-4 h-4 mr-2" />
+					Test Microphone
+				</Button> */}
+				<MicTest />
+
+				{/* Progress Badge */}
+				<div className="flex justify-end">
+					<span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
+						{completedCount} of {numberOfSets || "?"} completed
+					</span>
+				</div>
 			</div>
 
 			{/* Format Card */}
 			<Card>
-				<CardContent className="space-y-3 p-5">
+				<CardContent className="space-y-3 px-5">
 					<h2 className="text-xl font-semibold">
 						Speaking Test Format
 					</h2>
@@ -110,54 +141,74 @@ const SpeakingTestSession = () => {
 						<Timer className="w-4 h-4" />
 						Estimated Total Time: 11–14 minutes
 					</div>
+					{/* Platform Feature Description */}
+					<div className="mt-6 px-4 bg-blue-50 rounded-md text-sm text-blue-900">
+						<DropDownMenu
+							defaultValue={showTips ? "item-1" : ""}
+							trigger={
+								<h3 className="font-semibold mb-2">
+									How It Works
+								</h3>
+							}
+							content={
+								<div>
+									<p className="mb-2">
+										Take the speaking test in real-time
+										powered by AI. Our platform uses
+										advanced voice recognition and AI-driven
+										analysis to simulate an IELTS examiner.
+									</p>
+									<p>
+										You&apos;ll answer questions live, and
+										receive instant, personalized feedback
+										on your fluency, pronunciation, and
+										coherence — helping you improve faster
+										with each attempt.
+									</p>
+								</div>
+							}
+						/>
+					</div>
 				</CardContent>
 			</Card>
 
-			{/* Test Set Selector */}
-			<div className="space-y-2">
-				<Label>Select a Speaking Set</Label>
-				<Select onValueChange={handleSetChange}>
-					<SelectTrigger>
-						<SelectValue placeholder="Choose a topic or pick randomly" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="random">🎲 Random</SelectItem>
-						{speakingSets.map(({ id, topic }) => (
-							<SelectItem key={id} value={id.toString()}>
-								{topic}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</div>
+			<div className="flex justify-around gap-10">
+				{/* Test Set Selector */}
+				<div className="space-y-2">
+					<Label>Select a Speaking Set</Label>
+					<Select
+						value={selectedSetId}
+						onValueChange={handleSetChange}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="Choose a topic or pick randomly" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="random">🎲 Random</SelectItem>
+							{speakingSets.map(({ id, topic }) => (
+								<SelectItem key={id} value={id.toString()}>
+									{topic}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
 
-			{/* Test Mode Selector */}
-			<div className="space-y-2">
-				<Label>Select a Test Mode</Label>
-				<Select onValueChange={handleTestChange}>
-					<SelectTrigger>
-						<SelectValue
-							placeholder="Choose test mode"
-							defaultValue={"full"}
-						/>
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="full">Full Test</SelectItem>
-						<SelectItem value="part1">Part 1 Only</SelectItem>
-						<SelectItem value="part2_3">Part 2 & 3</SelectItem>
-					</SelectContent>
-				</Select>
+				{/* Test Mode Selector */}
+				<div className="space-y-2">
+					<Label>Select a Test Mode</Label>
+					<Select value={testMode} onValueChange={handleTestChange}>
+						<SelectTrigger>
+							<SelectValue placeholder="Choose test mode" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="full">Full Test</SelectItem>
+							<SelectItem value="part1">Part 1 Only</SelectItem>
+							<SelectItem value="part2_3">Part 2 & 3</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
-
-			{/* Microphone Test Button */}
-			<Button
-				variant="outline"
-				className="w-full md:w-auto"
-				onClick={testMicrophone}
-			>
-				<Mic className="w-4 h-4 mr-2" />
-				Test Microphone
-			</Button>
 
 			{/* Start Button */}
 			<div className="text-center pt-4">

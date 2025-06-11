@@ -47,7 +47,7 @@ const Dashboard = async () => {
 				</Link>
 
 				<Link
-					href="/history"
+					href="/results"
 					className="bg-white p-6 rounded-lg shadow hover:bg-gray-50 transition"
 				>
 					<div className="flex items-center gap-2 mb-2">
