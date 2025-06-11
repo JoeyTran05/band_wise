@@ -7,6 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const tests = [
 	{
+		title: "Speaking Test",
+		icon: <Mic className="h-6 w-6 text-primary" />,
+		description:
+			"Real-time speaking with AI and get instant expert feedback.",
+		href: "/take-tests/speaking",
+		duration: "15 mins",
+	},
+	{
+		title: "Writing Test",
+		icon: <PenLine className="h-6 w-6 text-primary" />,
+		description: "Practice writing Task 1 and Task 2 with AI scoring.",
+		href: "/take-tests/writing",
+		duration: "60 mins",
+	},
+	{
 		title: "Listening Test",
 		icon: <Headphones className="h-6 w-6 text-primary" />,
 		description:
@@ -21,20 +36,6 @@ const tests = [
 			"Test your reading skills with academic and general texts.",
 		href: "/take-tests/reading",
 		duration: "60 mins",
-	},
-	{
-		title: "Writing Test",
-		icon: <PenLine className="h-6 w-6 text-primary" />,
-		description: "Practice writing Task 1 and Task 2 with AI scoring.",
-		href: "/take-tests/writing",
-		duration: "60 mins",
-	},
-	{
-		title: "Speaking Test",
-		icon: <Mic className="h-6 w-6 text-primary" />,
-		description: "Answer real speaking prompts and get AI feedback.",
-		href: "/take-tests/speaking",
-		duration: "15 mins",
 	},
 ];
 

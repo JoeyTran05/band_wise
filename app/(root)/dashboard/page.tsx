@@ -1,5 +1,5 @@
 import ProgressChart from "@/components/ProgressChart";
-// import { auth, clerkClient } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import {
 	BarChart3,
 	BookOpen,
@@ -11,15 +11,14 @@ import {
 import Link from "next/link";
 
 const Dashboard = async () => {
-	// const { userId } = await auth();
-
-	// const client = await clerkClient();
-	// const user = await client.users.getUser(userId);
+	const user = await currentUser();
 
 	return (
 		<main className="p-6 space-y-8 max-w-6xl mx-auto">
 			{/* Header */}
-			<h1 className="text-3xl font-bold">Welcome back, student!</h1>
+			<h1 className="text-3xl font-bold">
+				Welcome back, {user?.fullName}!
+			</h1>
 
 			{/* Progress Chart Placeholder */}
 			<section className="bg-zinc-900 p-6 rounded-lg shadow-md">

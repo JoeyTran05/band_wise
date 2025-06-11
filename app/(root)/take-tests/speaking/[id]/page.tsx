@@ -1,12 +1,6 @@
 import { Card } from "@/components/ui/card";
-import { getSpeakingQuestions } from "@/lib/actions/test.action";
-// import { currentUser } from "@clerk/nextjs/server";
 
-const SpeakingTestSession = async () => {
-	const questions = await getSpeakingQuestions();
-	// const user = await currentUser();
-	console.log("Questions:", questions);
-
+const SpeakingTestSession = () => {
 	return (
 		<div className="flex gap-4 p-6 max-w-5xl mx-auto">
 			<Card className="flex-1 p-4">
