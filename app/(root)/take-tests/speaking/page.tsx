@@ -10,7 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Mic, Timer } from "lucide-react";
+import { Timer } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { RedirectToSignIn, useUser } from "@clerk/nextjs";
@@ -79,15 +79,6 @@ const SpeakingTestSession = () => {
 		router.push(`/speaking-test/${idToUse}`);
 	};
 
-	const testMicrophone = () => {
-		navigator.mediaDevices
-			.getUserMedia({ audio: true })
-			.then(() => alert("🎤 Microphone test passed!"))
-			.catch(() =>
-				alert("❌ Microphone not accessible. Please check permissions.")
-			);
-	};
-
 	return (
 		<div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
 			<h1 className="text-3xl font-bold text-center">
@@ -98,15 +89,6 @@ const SpeakingTestSession = () => {
 			</p>
 
 			<div className="flex justify-between items-center">
-				{/* Microphone Test Button */}
-				{/* <Button
-					variant="outline"
-					className=" md:w-auto"
-					onClick={testMicrophone}
-				>
-					<Mic className="w-4 h-4 mr-2" />
-					Test Microphone
-				</Button> */}
 				<MicTest />
 
 				{/* Progress Badge */}
@@ -216,7 +198,6 @@ const SpeakingTestSession = () => {
 					size="lg"
 					className="w-full md:w-auto"
 					onClick={startTest}
-					// disabled={!selectedSetId}
 				>
 					Start Speaking Test
 				</Button>
