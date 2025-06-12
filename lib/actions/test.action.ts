@@ -27,7 +27,7 @@ export const getPart1SpeakingQuestions = async () => {
 
 	const { data: questions, error: error } = await supabase
 		.from("speaking_questions")
-		.select("*")
+		.select("id, set_id, question_text, question_number, part")
 		.eq("part", 1)
 		.eq("set_id", randomPart1SetId)
 		.order("question_number", { ascending: true });
@@ -52,7 +52,7 @@ export const getNextSpeakingSetForUser = async (userId: string) => {
 	// 2. Fetch the next set (part 2 & 3) that is not completed by the user
 	const { data: nextSet, error: nextSetError } = await supabase
 		.from("speaking_sets")
-		.select("*")
+		.select("id, topic, part")
 		.eq("part", 2)
 		.not("id", "in", `(${completedSetIds.join(",") || 0})`) // Fallback to 0 if empty
 		.order("id", { ascending: true })
@@ -66,7 +66,7 @@ export const getNextSpeakingSetForUser = async (userId: string) => {
 	// 3. Fetching questions for the next set (part 2 & 3)
 	const { data: questions, error: questionsError } = await supabase
 		.from("speaking_questions")
-		.select("*")
+		.select("id, set_id, question_text, question_number, part")
 		.eq("set_id", nextSet.id)
 		.order("part, question_number", { ascending: true });
 
@@ -81,6 +81,31 @@ export const getNextSpeakingSetForUser = async (userId: string) => {
 			part2: questions.filter((q) => q.part === 2),
 			part3: questions.filter((q) => q.part === 3),
 		},
+	} as SpeakingSet;
+};
+
+export const getSpeakingSetForUser = async (id: string) => {
+	const supabase = createSupabaseClient();
+
+	// Fetching part 1 questions from a random set
+	const questions_part1 = await getPart1SpeakingQuestions();
+
+	// Fetching the next speaking set for the user
+	const setId = parseInt(id) + 27; // Adjusting the set ID to match the speaking_sets table in database
+	const { data: questions, error: questionsError } = await supabase
+		.from("speaking_questions")
+		.select("id, set_id, question_text, question_number, part")
+		.eq("set_id", setId)
+		.order("part, question_number", { ascending: true });
+
+	if (questionsError) {
+		throw new Error(questionsError.message);
+	}
+
+	return {
+		part1: questions_part1,
+		part2: questions.filter((q) => q.part === 2),
+		part3: questions.filter((q) => q.part === 3),
 	};
 };
 
@@ -110,4 +135,20 @@ export const getSpeakingSets = async () => {
 		uniqueSets,
 		// uniqueSets: [...new Set(sets.map((set) => set.topic))],
 	};
+};
+
+export const getSetTopic = async (setId: number) => {
+	const supabase = createSupabaseClient();
+
+	const { data: set, error } = await supabase
+		.from("speaking_sets")
+		.select("topic")
+		.eq("id", setId)
+		.single();
+
+	if (error || !set) {
+		throw new Error(error?.message || "Set not found");
+	}
+
+	return set.topic;
 };

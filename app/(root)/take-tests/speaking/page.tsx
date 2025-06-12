@@ -53,15 +53,12 @@ const SpeakingTestSession = () => {
 
 	useEffect(() => {
 		const screenWidth = window.innerWidth;
-		console.log("Screen width:", screenWidth);
 		if (screenWidth < 768) {
 			setShowTips(false);
 		}
 	}, []);
 
-	if (!isSignedIn) {
-		return <RedirectToSignIn />;
-	}
+	if (!isSignedIn) return <RedirectToSignIn />;
 
 	const handleSetChange = (value: string) => {
 		setSelectedSetId(value);
@@ -76,7 +73,7 @@ const SpeakingTestSession = () => {
 			selectedSetId === "random"
 				? `${completedCount + 1}`
 				: selectedSetId;
-		router.push(`/speaking-test/${idToUse}`);
+		router.push(`/take-tests/speaking/${idToUse}?mode=${testMode}`);
 	};
 
 	return (

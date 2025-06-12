@@ -109,3 +109,33 @@ interface FeatureCardProps {
 	description: string;
 	icon: LucideIcon;
 }
+
+interface Question {
+	id: number;
+	set_id: number;
+	question_text: string;
+	question_number: number;
+	part: number;
+}
+
+interface QuestionsByPart {
+	part1: Question[];
+	part2: Question[];
+	part3: Question[];
+}
+
+interface Set {
+	id: number;
+	topic: string;
+	part: number;
+}
+
+interface SpeakingSet {
+	set: Set;
+	questionsByPart: QuestionsByPart;
+}
+
+interface SavedMessage {
+	role: "user" | "system" | "assistant";
+	content: string;
+}
