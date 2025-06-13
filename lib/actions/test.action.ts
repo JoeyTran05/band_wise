@@ -1,115 +1,99 @@
 "use server";
 
+import { feedbackSchema } from "@/constants";
 import { createSupabaseClient } from "../supabase";
+import { generateObject } from "ai";
+import { google } from "@ai-sdk/google";
 
-export const getCompletedSpeakingSets = async (userId: string) => {
+export const getRandomPart1Questions = async () => {
 	const supabase = createSupabaseClient();
 
-	const { data: completedResults, error: completedError } = await supabase
-		.from("speaking_results")
-		.select("set_id")
-		.eq("user_id", userId);
+	const { count } = await supabase
+		.from("speaking_first_part_sets")
+		.select("*", { count: "exact", head: true });
 
-	if (completedError) {
-		throw new Error(completedError.message);
-	}
-
-	const completedSetIds = completedResults?.map((res) => res.set_id) ?? [];
-
-	return completedSetIds;
-};
-
-export const getPart1SpeakingQuestions = async () => {
-	const supabase = createSupabaseClient();
-
-	const totalPart1Set = 27;
-	const randomPart1SetId = Math.floor(Math.random() * totalPart1Set) + 1;
+	const randomId = Math.floor(Math.random() * (count || 0)) + 1;
 
 	const { data: questions, error: error } = await supabase
-		.from("speaking_questions")
-		.select("id, set_id, question_text, question_number, part")
-		.eq("part", 1)
-		.eq("set_id", randomPart1SetId)
-		.order("question_number", { ascending: true });
-
-	if (error || !questions || questions.length === 0) {
-		throw new Error(error?.message || "No questions found for part 1");
-	}
-
-	return questions;
-};
-
-export const getNextSpeakingSetForUser = async (userId: string) => {
-	const supabase = createSupabaseClient();
-
-	// Fetching part 1 questions from a random set
-	const questions_part1 = await getPart1SpeakingQuestions();
-
-	// Fetching the next speaking set for the user
-	// 1. Get all completed set_ids for this user
-	const completedSetIds = await getCompletedSpeakingSets(userId);
-
-	// 2. Fetch the next set (part 2 & 3) that is not completed by the user
-	const { data: nextSet, error: nextSetError } = await supabase
-		.from("speaking_sets")
-		.select("id, topic, part")
-		.eq("part", 2)
-		.not("id", "in", `(${completedSetIds.join(",") || 0})`) // Fallback to 0 if empty
-		.order("id", { ascending: true })
-		.limit(1)
+		.from("speaking_first_part_sets")
+		.select("id, order_id, topic, questions")
+		.eq("order_id", randomId)
 		.single();
 
-	if (nextSetError) {
-		throw new Error(nextSetError.message);
+	if (error || !questions) {
+		throw new Error(error?.message || "No questions set found for part 1");
 	}
 
-	// 3. Fetching questions for the next set (part 2 & 3)
-	const { data: questions, error: questionsError } = await supabase
-		.from("speaking_questions")
-		.select("id, set_id, question_text, question_number, part")
-		.eq("set_id", nextSet.id)
-		.order("part, question_number", { ascending: true });
-
-	if (questionsError) {
-		throw new Error(questionsError.message);
-	}
-
-	return {
-		set: nextSet,
-		questionsByPart: {
-			part1: questions_part1,
-			part2: questions.filter((q) => q.part === 2),
-			part3: questions.filter((q) => q.part === 3),
-		},
-	} as SpeakingSet;
+	return questions as FirstPart;
 };
 
 export const getSpeakingSetForUser = async (id: string) => {
 	const supabase = createSupabaseClient();
 
 	// Fetching part 1 questions from a random set
-	const questions_part1 = await getPart1SpeakingQuestions();
+	const questions_part1 = await getRandomPart1Questions();
 
 	// Fetching the next speaking set for the user
-	const setId = parseInt(id) + 27; // Adjusting the set ID to match the speaking_sets table in database
 	const { data: questions, error: questionsError } = await supabase
-		.from("speaking_questions")
-		.select("id, set_id, question_text, question_number, part")
-		.eq("set_id", setId)
-		.order("part, question_number", { ascending: true });
+		.from("speaking_sets")
+		.select("id, order_id, topic, cue_card, questions")
+		.eq("id", id)
+		.single();
 
 	if (questionsError) {
 		throw new Error(questionsError.message);
 	}
 
 	return {
-		part1: questions_part1,
-		part2: questions.filter((q) => q.part === 2),
-		part3: questions.filter((q) => q.part === 3),
-	};
+		firstTopic: questions_part1.topic,
+		secondTopic: questions.topic,
+		part1: questions_part1.questions,
+		part2: questions.cue_card,
+		part3: questions.questions,
+		firstPartId: questions_part1.id,
+	} as SpeakingSet;
 };
 
-export const getSpeakingSets = async () => {
+export const getUniqueCompletedCount = async (userId: string) => {
+	const supabase = createSupabaseClient();
+
+	const { data: completedResults, error: completedError } = await supabase
+		.from("speaking_results")
+		.select("*")
+		.eq("user_id", userId);
+
+	const uniqueResults = Array.from(
+		new Set(completedResults?.map((result) => result.set_id_second))
+	);
+
+	if (completedError) return 0;
+
+	return uniqueResults?.length;
+};
+
+export const getRandomSetId = async () => {
+	// !! implement get random ID but ensure it is unique and not already completed by the user !!
+
+	const supabase = createSupabaseClient();
+
+	const { count } = await supabase
+		.from("speaking_sets")
+		.select("*", { count: "exact", head: true });
+
+	const randomId = Math.floor(Math.random() * (count || 0)) + 1;
+
+	const { data: set, error } = await supabase
+		.from("speaking_sets")
+		.select("id, order_id")
+		.eq("order_id", randomId)
+		.single();
+
+	if (error || !set) throw new Error(error?.message || "Set not found");
+
+	return set.id;
+};
+
+export const getSpeakingTopicAndId = async () => {
 	const supabase = createSupabaseClient();
 
 	const { data: sets, error } = await supabase
@@ -131,24 +115,92 @@ export const getSpeakingSets = async () => {
 	const uniqueSets = Array.from(uniqueSetsMap.values());
 
 	return {
-		sets,
-		uniqueSets,
-		// uniqueSets: [...new Set(sets.map((set) => set.topic))],
+		topics: sets,
+		uniqueTopics: uniqueSets,
 	};
 };
 
-export const getSetTopic = async (setId: number) => {
+export const createFeedback = async (params: CreateFeedbackParams) => {
+	const { testId, firstPartId, userId, transcript } = params;
 	const supabase = createSupabaseClient();
 
-	const { data: set, error } = await supabase
-		.from("speaking_sets")
-		.select("topic")
-		.eq("id", setId)
+	try {
+		const formattedTranscript = transcript
+			.map(
+				(senctence: { role: string; content: string }) =>
+					`- ${senctence.role}: ${senctence.content}\n`
+			)
+			.join("");
+
+		const {
+			object: {
+				total_score,
+				category_scores,
+				strengths,
+				areas_for_improvement,
+				final_assessment,
+			},
+		} = await generateObject({
+			model: google("gemini-2.0-flash-001", {
+				structuredOutputs: false,
+			}),
+			schema: feedbackSchema,
+			prompt: `
+        You are an AI IELTS examiner analyzing an IELTS mock speaking test. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
+        Transcript:
+        ${formattedTranscript}
+
+        Please score the candidate from 0 to 9 in the following areas with 9 being the highest and there are only whole scores or .5 scores (for example 9.0 or 8.5). Do not add categories other than the ones provided:
+        - **Fluency and Coherence**: ability to talk with normal levels of continuity, rate and effort, and to link ideas and language together to form coherent, connected speech.
+        - **Lexical Resource**: range of vocabulary at the test taker’s disposal, which will influence the range of topics which they can discuss, and the precision with which meanings are expressed and attitudes conveyed.
+        - **Grammatical Range and Accuracy**: accurate and appropriate use of syntactic forms in order to meet Speaking test requirements, and to the test taker’s range of grammatical resources, 
+a feature which will help to determine the complexity of propositions which can be expressed.
+        - **Pronunciation**: accurate and sustained use of a range of phonological features to convey meaningful messages.
+        `,
+			system: "You are a professional IELTS examiner analyzing an IELTS mock speaking test. Your task is to evaluate the candidate based on structured categories",
+		});
+
+		const { data, error } = await supabase
+			.from("speaking_results")
+			.insert({
+				user_id: userId,
+				set_id_first: firstPartId,
+				set_id_second: testId,
+				total_score,
+				category_scores,
+				strengths,
+				areas_for_improvement,
+				final_assessment,
+			})
+			.select();
+
+		if (error || !data)
+			throw new Error(error?.message || "Failed to create feedback");
+
+		return { success: true, feedbackId: data[0].set_id_second };
+	} catch (e) {
+		console.error("Error creating feedback:", e);
+		return {
+			success: false,
+			feedbackId: "",
+		};
+	}
+};
+
+export const getFeedbackById = async (params: GetFeedbackBySetIdParams) => {
+	const supabase = createSupabaseClient();
+	const { id, userId } = params;
+
+	const { data, error } = await supabase
+		.from("speaking_results")
+		.select("*")
+		.eq("set_id_second", id)
+		.eq("user_id", userId)
 		.single();
 
-	if (error || !set) {
-		throw new Error(error?.message || "Set not found");
+	if (error || !data) {
+		throw new Error(error?.message || "Feedback not found");
 	}
 
-	return set.topic;
+	return data as Feedback;
 };

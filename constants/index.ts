@@ -1,5 +1,5 @@
 // import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
-// import { z } from "zod";
+import { z } from "zod";
 
 // export const examiner: CreateAssistantDTO = {
 // 	name: "Examiner",
@@ -65,39 +65,34 @@ export const voices = {
 	female: { casual: "ZIlrSGI4jZqobxRKprJz", formal: "sarah" },
 };
 
-// export const feedbackSchema = z.object({
-//   totalScore: z.number(),
-//   categoryScores: z.tuple([
-//     z.object({
-//       name: z.literal("Communication Skills"),
-//       score: z.number(),
-//       comment: z.string(),
-//     }),
-//     z.object({
-//       name: z.literal("Technical Knowledge"),
-//       score: z.number(),
-//       comment: z.string(),
-//     }),
-//     z.object({
-//       name: z.literal("Problem Solving"),
-//       score: z.number(),
-//       comment: z.string(),
-//     }),
-//     z.object({
-//       name: z.literal("Cultural Fit"),
-//       score: z.number(),
-//       comment: z.string(),
-//     }),
-//     z.object({
-//       name: z.literal("Confidence and Clarity"),
-//       score: z.number(),
-//       comment: z.string(),
-//     }),
-//   ]),
-//   strengths: z.array(z.string()),
-//   areasForImprovement: z.array(z.string()),
-//   finalAssessment: z.string(),
-// });
+export const feedbackSchema = z.object({
+	total_score: z.number(),
+	category_scores: z.tuple([
+		z.object({
+			name: z.literal("Fluency and Coherence"),
+			score: z.number(),
+			comment: z.string(),
+		}),
+		z.object({
+			name: z.literal("Lexical Resource"),
+			score: z.number(),
+			comment: z.string(),
+		}),
+		z.object({
+			name: z.literal("Grammatical Range and Accuracy"),
+			score: z.number(),
+			comment: z.string(),
+		}),
+		z.object({
+			name: z.literal("Pronunciation"),
+			score: z.number(),
+			comment: z.string(),
+		}),
+	]),
+	strengths: z.array(z.string()),
+	areas_for_improvement: z.array(z.string()),
+	final_assessment: z.string(),
+});
 
 // export const dummyInterviews: Interview[] = [
 //   {

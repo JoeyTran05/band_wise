@@ -1,6 +1,11 @@
 "use client";
 
-import { cn, configureAssistant, formatCueCard } from "@/lib/utils";
+import {
+	cn,
+	configureAssistantFull,
+	configureAssistantPart1,
+	configureAssistantPart2and3,
+} from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -8,6 +13,7 @@ import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import soundwaves from "@/constants/soundwaves.json";
 import { useRouter } from "next/navigation";
 import DropDownMenu from "./DropDownMenu";
+import { createFeedback } from "@/lib/actions/test.action";
 
 enum CallStatus {
 	INACTIVE = "INACTIVE",
@@ -16,32 +22,34 @@ enum CallStatus {
 	FINISHED = "FINISHED",
 }
 
-interface CueCardType {
-	main: string;
-	bulletPoints: string[];
-	finalLine: string;
-}
-
 const SpeakingComponent = ({
+	userId,
 	userName,
 	userImage,
+	setId,
+	firstPartId,
 	questions,
 	topics,
+	mode,
 }: {
+	userId: string;
 	userName: string;
 	userImage: string;
-	questions: QuestionsByPart;
+	setId: string;
+	firstPartId: string;
+	questions: FullTestQuestions;
 	topics: string[];
+	mode: TestMode;
 }) => {
 	const [callStatus, setCallStatus] = useState<CallStatus>(
 		CallStatus.INACTIVE
 	);
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 	const [isMuted, setIsMuted] = useState<boolean>(false);
-	const [messages, setMessages] = useState<SavedMessage[]>([]);
-	const [cueCard, setCueCard] = useState<CueCardType>({} as CueCardType);
-
 	const [readyState, setReadyState] = useState<boolean>(false); // Waiting for questions to be loaded
+
+	const [messages, setMessages] = useState<SavedMessage[]>([]);
+	const [cueCard, setCueCard] = useState<CueCard>();
 
 	const lottieRef = useRef<LottieRefCurrentProps>(null);
 
@@ -49,9 +57,12 @@ const SpeakingComponent = ({
 
 	useEffect(() => {
 		if (questions) {
-			setCueCard(formatCueCard(questions.part2[0].question_text));
+			setCueCard({
+				main: questions.part2.main,
+				bullet_points: questions.part2.bullet_points,
+				final_line: questions.part2.final_line,
+			});
 			setReadyState(true);
-			console.log("Questions:", questions);
 		}
 	}, [questions]);
 
@@ -108,13 +119,15 @@ const SpeakingComponent = ({
 	const handleGenerateFeedback = async (messsages: SavedMessage[]) => {
 		console.log("Generate feedback with messages:", messsages);
 
-		const { success, id } = {
-			success: true,
-			id: "feedback-id",
-		};
+		const { success, feedbackId: id } = await createFeedback({
+			userId: userId,
+			testId: setId,
+			firstPartId: firstPartId,
+			transcript: messsages,
+		});
 
 		if (success && id) {
-			router.push(`/take-tests/speaking/${id}/feedback`);
+			router.push(`/take-tests/speaking/${setId}/feedback`);
 		} else {
 			console.log("Failed to generate feedback");
 			router.push("/take-tests/speaking");
@@ -145,9 +158,9 @@ const SpeakingComponent = ({
 			formattedPart1 = questions.part1
 				.map((question) => `- ${question.question_text}`)
 				.join("\n");
-			formattedPart2 = questions.part2
-				.map((question) => `- ${question.question_text}`)
-				.join("\n");
+			formattedPart2 = `${cueCard?.main}\n${cueCard?.bullet_points
+				.map((point) => `- ${point}`)
+				.join("\n")}\n${cueCard?.final_line}`;
 			formattedPart3 = questions.part3
 				.map((question) => `- ${question.question_text}`)
 				.join("\n");
@@ -165,8 +178,25 @@ const SpeakingComponent = ({
 			serverMessages: [],
 		};
 
-		// @ts-expect-error typecript error
-		vapi.start(configureAssistant("male", "formal"), assistantOverrides);
+		if (mode === "full") {
+			vapi.start(
+				configureAssistantFull("male", "formal"),
+				// @ts-expect-error typecript error
+				assistantOverrides
+			);
+		} else if (mode === "part1") {
+			vapi.start(
+				configureAssistantPart1("male", "formal"),
+				// @ts-expect-error typecript error
+				assistantOverrides
+			);
+		} else {
+			vapi.start(
+				configureAssistantPart2and3("male", "formal"),
+				// @ts-expect-error typecript error
+				assistantOverrides
+			);
+		}
 	};
 
 	const handleDisconnect = () => {
@@ -286,11 +316,13 @@ const SpeakingComponent = ({
 								{cueCard?.main}
 							</p>
 							<ul className="list-disc pl-6 text-sm space-y-1">
-								{cueCard?.bulletPoints?.map((point, index) => (
+								{cueCard?.bullet_points.map((point, index) => (
 									<li key={index}>{point}</li>
 								))}
 							</ul>
-							<p className="mt-2 text-sm">{cueCard?.finalLine}</p>
+							<p className="mt-2 text-sm">
+								{cueCard?.final_line}
+							</p>
 						</div>
 					}
 				/>

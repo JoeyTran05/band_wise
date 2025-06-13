@@ -1,7 +1,7 @@
 "use client";
 
 import SpeakingComponent from "@/components/SpeakingComponent";
-import { getSetTopic, getSpeakingSetForUser } from "@/lib/actions/test.action";
+import { getSpeakingSetForUser } from "@/lib/actions/test.action";
 import { RedirectToSignIn, useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { redirect } from "next/navigation";
@@ -29,8 +29,13 @@ const SpeakingTestSession = ({
 	searchParams,
 }: SpeakingTestSessionProps) => {
 	const [testPart, setTestPart] = useState<TestPart>(TestPart.part1);
-	const [questions, setQuestions] = useState<QuestionsByPart>();
+	const [questions, setQuestions] = useState<FullTestQuestions>();
 	const [topics, setTopics] = useState<string[]>([]);
+
+	const [id, setId] = useState<string>("");
+	const [firstPartId, setFirstPartId] = useState<string>("");
+	const [mode, setMode] = useState<TestMode>();
+
 	const { user, isSignedIn } = useUser();
 
 	useEffect(() => {
@@ -39,23 +44,32 @@ const SpeakingTestSession = ({
 		const fetchData = async () => {
 			const { id } = await params;
 			const { mode } = (await searchParams) || "full";
-			const speakingSet = await getSpeakingSetForUser(id);
-			const firstTopic = await getSetTopic(speakingSet.part1[0]?.set_id);
-			const secondTopic = await getSetTopic(speakingSet.part2[0]?.set_id);
+
+			const {
+				firstTopic,
+				secondTopic,
+				part1,
+				part2,
+				part3,
+				firstPartId,
+			} = await getSpeakingSetForUser(id);
+
+			setId(id);
+			setFirstPartId(firstPartId);
+			setMode(mode.toLowerCase() as TestMode);
 			setTopics([firstTopic, secondTopic]);
-			setQuestions(speakingSet);
+			setQuestions({ part1: part1, part2: part2, part3: part3 });
 
-			if (speakingSet.part2.length === 0)
+			if (!part2 || part3.length === 0) {
 				redirect("/take-tests/speaking");
-
-			console.log("Speaking Set:", speakingSet);
-			console.log("Topics:", firstTopic + secondTopic);
+			}
 		};
 
 		fetchData();
 	}, [user, params, searchParams]);
 
 	if (!isSignedIn) return <RedirectToSignIn />;
+
 	return (
 		<main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
 			<article className="flex rounded-border justify-between p-6 max-md:flex-col">
@@ -98,10 +112,14 @@ const SpeakingTestSession = ({
 			</article>
 
 			<SpeakingComponent
+				userId={user.id!}
 				userName={user.fullName!}
 				userImage={user.imageUrl!}
+				setId={id}
+				firstPartId={firstPartId}
 				questions={questions!}
 				topics={topics}
+				mode={mode!}
 			/>
 		</main>
 	);

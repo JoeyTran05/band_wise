@@ -1,17 +1,17 @@
-// interface Feedback {
-//   id: string;
-//   interviewId: string;
-//   totalScore: number;
-//   categoryScores: Array<{
-//     name: string;
-//     score: number;
-//     comment: string;
-//   }>;
-//   strengths: string[];
-//   areasForImprovement: string[];
-//   finalAssessment: string;
-//   createdAt: string;
-// }
+interface Feedback {
+	id: string;
+	set_Id: number;
+	total_score: number;
+	category_scores: Array<{
+		name: string;
+		score: number;
+		comment: string;
+	}>;
+	strengths: string[];
+	areas_for_improvement: string[];
+	final_assessment: string;
+	created_at: string;
+}
 
 // interface Interview {
 //   id: string;
@@ -25,12 +25,13 @@
 //   finalized: boolean;
 // }
 
-// interface CreateFeedbackParams {
-//   interviewId: string;
-//   userId: string;
-//   transcript: { role: string; content: string }[];
-//   feedbackId?: string;
-// }
+interface CreateFeedbackParams {
+	userId: string;
+	testId: string;
+	firstPartId: string;
+	transcript: { role: string; content: string }[];
+	feedbackId?: string;
+}
 
 // interface User {
 //   name: string;
@@ -56,15 +57,15 @@
 //   questions?: string[];
 // }
 
-// interface RouteParams {
-//   params: Promise<Record<string, string>>;
-//   searchParams: Promise<Record<string, string>>;
-// }
+interface RouteParams {
+	params: Promise<Record<string, string>>;
+	searchParams: Promise<Record<string, string>>;
+}
 
-// interface GetFeedbackByInterviewIdParams {
-//   interviewId: string;
-//   userId: string;
-// }
+interface GetFeedbackBySetIdParams {
+	id: string;
+	userId: string;
+}
 
 // interface GetLatestInterviewsParams {
 //   userId: string;
@@ -84,6 +85,12 @@ interface SignUpParams {
 }
 
 type FormType = "sign-in" | "sign-up";
+
+enum TestMode {
+	FULL = "full",
+	PART1 = "part1",
+	PART2AND3 = "part2and3",
+}
 
 // interface InterviewFormProps {
 //   interviewId: string;
@@ -110,29 +117,37 @@ interface FeatureCardProps {
 	icon: LucideIcon;
 }
 
-interface Question {
-	id: number;
-	set_id: number;
+interface FirstPart {
+	id: string;
+	order_id: number;
+	topic: string;
+	questions: { question_text: string; question_number: number }[];
+}
+
+interface Questions {
 	question_text: string;
 	question_number: number;
-	part: number;
 }
 
-interface QuestionsByPart {
-	part1: Question[];
-	part2: Question[];
-	part3: Question[];
+interface CueCard {
+	main: string;
+	final_line: string;
+	bullet_points: string[];
 }
 
-interface Set {
-	id: number;
-	topic: string;
-	part: number;
+interface FullTestQuestions {
+	part1: Questions[];
+	part2: CueCard;
+	part3: Questions[];
 }
 
 interface SpeakingSet {
-	set: Set;
-	questionsByPart: QuestionsByPart;
+	firstTopic: string;
+	secondTopic: string;
+	part1: Questions[];
+	part2: CueCard;
+	part3: Questions[];
+	firstPartId: string;
 }
 
 interface SavedMessage {

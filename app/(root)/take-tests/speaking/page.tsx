@@ -10,16 +10,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Timer } from "lucide-react";
+import { Timer, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { RedirectToSignIn, useUser } from "@clerk/nextjs";
 import {
-	getCompletedSpeakingSets,
-	getSpeakingSets,
+	getRandomSetId,
+	getSpeakingTopicAndId,
+	getUniqueCompletedCount,
 } from "@/lib/actions/test.action";
 import DropDownMenu from "@/components/DropDownMenu";
 import MicTest from "@/components/MicTest";
+import { cn } from "@/lib/utils";
 
 type SpeakingSet = {
 	id: number;
@@ -29,10 +31,16 @@ type SpeakingSet = {
 const SpeakingTestSession = () => {
 	const [speakingSets, setSpeakingSets] = useState<SpeakingSet[]>([]);
 	const [numberOfSets, setNumberOfSets] = useState<number>(0);
-	const [showTips, setShowTips] = useState<boolean>(true);
-	const [testMode, setTestMode] = useState("full");
-	const [selectedSetId, setSelectedSetId] = useState<string>("random");
 	const [completedCount, setCompletedCount] = useState<number>(0);
+
+	const [showTips, setShowTips] = useState<boolean>(true);
+
+	const [selectedSetId, setSelectedSetId] = useState<string>("random");
+	const [testMode, setTestMode] = useState("full");
+
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [isStarting, setIsStarting] = useState<boolean>(false);
+
 	const router = useRouter();
 	const { user, isSignedIn } = useUser();
 
@@ -40,12 +48,13 @@ const SpeakingTestSession = () => {
 		if (!user) return;
 
 		const fetchData = async () => {
-			const { sets, uniqueSets } = await getSpeakingSets();
-			setNumberOfSets(sets.length);
-			setSpeakingSets(uniqueSets);
+			const { topics, uniqueTopics } = await getSpeakingTopicAndId();
+			setSpeakingSets(uniqueTopics);
+			setNumberOfSets(topics.length);
 
-			const completedSets = await getCompletedSpeakingSets(user!.id);
-			setCompletedCount(completedSets?.length || 0);
+			const completedCount = await getUniqueCompletedCount(user!.id);
+			setCompletedCount(completedCount);
+			setIsLoading(false);
 		};
 
 		fetchData();
@@ -68,12 +77,17 @@ const SpeakingTestSession = () => {
 		setTestMode(value);
 	};
 
-	const startTest = () => {
+	const redirectToTest = (id: string) => {
+		router.push(`/take-tests/speaking/${id}?mode=${testMode}`);
+	};
+
+	const startTest = async () => {
+		setIsStarting(true);
 		const idToUse =
 			selectedSetId === "random"
-				? `${completedCount + 1}`
+				? `${await getRandomSetId()}`
 				: selectedSetId;
-		router.push(`/take-tests/speaking/${idToUse}?mode=${testMode}`);
+		redirectToTest(idToUse);
 	};
 
 	return (
@@ -90,8 +104,24 @@ const SpeakingTestSession = () => {
 
 				{/* Progress Badge */}
 				<div className="flex justify-end">
-					<span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
-						{completedCount} of {numberOfSets || "?"} completed
+					<span
+						className={cn(
+							"text-sm px-3 py-1 rounded-full inline-flex items-center gap-2",
+							isLoading
+								? "bg-muted text-muted-foreground animate-pulse"
+								: "bg-green-100 text-green-800"
+						)}
+					>
+						{isLoading ? (
+							<>
+								<Loader2 className="w-3 h-3 animate-spin" />
+								<span>Loading...</span>
+							</>
+						) : (
+							`${completedCount} of ${
+								numberOfSets ?? "?"
+							} completed`
+						)}
 					</span>
 				</div>
 			</div>
@@ -183,7 +213,9 @@ const SpeakingTestSession = () => {
 						<SelectContent>
 							<SelectItem value="full">Full Test</SelectItem>
 							<SelectItem value="part1">Part 1 Only</SelectItem>
-							<SelectItem value="part2_3">Part 2 & 3</SelectItem>
+							<SelectItem value="part2and3">
+								Part 2 & 3
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -195,8 +227,16 @@ const SpeakingTestSession = () => {
 					size="lg"
 					className="w-full md:w-auto"
 					onClick={startTest}
+					disabled={isStarting}
 				>
-					Start Speaking Test
+					{isStarting ? (
+						<div className="flex items-center gap-2">
+							<Loader2 className="animate-spin w-4 h-4" />
+							<span>Starting...</span>
+						</div>
+					) : (
+						"Start Speaking Test"
+					)}
 				</Button>
 			</div>
 		</div>
