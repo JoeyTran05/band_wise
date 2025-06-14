@@ -23,10 +23,10 @@ import DropDownMenu from "@/components/DropDownMenu";
 import MicTest from "@/components/MicTest";
 import { cn } from "@/lib/utils";
 
-type SpeakingSet = {
-	id: number;
+interface SpeakingSet {
+	id: string;
 	topic: string;
-};
+}
 
 const SpeakingTestSession = () => {
 	const [speakingSets, setSpeakingSets] = useState<SpeakingSet[]>([]);
@@ -85,7 +85,7 @@ const SpeakingTestSession = () => {
 		setIsStarting(true);
 		const idToUse =
 			selectedSetId === "random"
-				? `${await getRandomSetId()}`
+				? `${await getRandomSetId(user?.id)}`
 				: selectedSetId;
 		redirectToTest(idToUse);
 	};

@@ -12,17 +12,17 @@ interface SpeakingTestSessionProps {
 	searchParams: Promise<{ mode: string }>;
 }
 
+export enum TestPart {
+	part1 = "Part 1",
+	part2 = "Part 2",
+	part3 = "Part 3",
+}
+
 const testDescriptions = {
 	part1: "Introduction & Interview",
 	part2: "Long Turn — 1-minute preparation, 1–2 minutes speaking",
 	part3: "Discussion on abstract ideas",
 };
-
-enum TestPart {
-	part1 = "Part 1",
-	part2 = "Part 2",
-	part3 = "Part 3",
-}
 
 const SpeakingTestSession = ({
 	params,
@@ -120,6 +120,7 @@ const SpeakingTestSession = ({
 				questions={questions!}
 				topics={topics}
 				mode={mode!}
+				setTestPart={setTestPart}
 			/>
 		</main>
 	);

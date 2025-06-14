@@ -7,38 +7,6 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function formatCueCard(rawPrompt: string): {
-	main: string;
-	bulletPoints: string[];
-	finalLine: string;
-} {
-	if (!rawPrompt.includes("You should say")) {
-		return { main: rawPrompt.trim(), bulletPoints: [], finalLine: "" };
-	}
-
-	// Fix missing space after period
-	const spaced = rawPrompt.replace(/([a-z])\.(?=[A-Z])/g, "$1. ");
-
-	// Split into intro and detail
-	const [mainRaw, detailRaw] = spaced.split("You should say");
-	const main = mainRaw.trim().replace(/\.*$/, ""); // remove trailing dot
-
-	// Match each part starting with a keyword
-	const bulletRegex =
-		/\b(What|Where|When|Why|Who|Which|Was|Is|Explain|Describe)[^]*?(?=\b(What|Where|When|Why|Who|Which|Was|Is|Explain|Describe)|$)/g;
-	const matchedParts =
-		detailRaw.match(bulletRegex)?.map((s) => s.trim()) ?? [];
-
-	const bulletPoints = matchedParts.slice(0, -1);
-	const finalLine = matchedParts[matchedParts.length - 1] || "";
-
-	return {
-		main: `${main}. You should say:`,
-		bulletPoints,
-		finalLine,
-	};
-}
-
 export const configureAssistantFull = (voice: string, style: string) => {
 	const voiceId =
 		voices[voice as keyof typeof voices][
@@ -48,7 +16,7 @@ export const configureAssistantFull = (voice: string, style: string) => {
 	const examiner: CreateAssistantDTO = {
 		name: "Examiner",
 		firstMessage:
-			"Hello! Welcome to IELTS Speaking Test. My name is WiseAI, and I will be your examiner today. Let's talk about {{firstTopic}}.",
+			"Hello! Welcome to IELTS Speaking Test. My name is Wise AI, and I will be your examiner today. Let's talk about {{firstTopic}}.",
 		transcriber: {
 			provider: "deepgram",
 			model: "nova-3",
@@ -63,7 +31,16 @@ export const configureAssistantFull = (voice: string, style: string) => {
 			style: 0.5,
 			useSpeakerBoost: true,
 		},
-		startSpeakingPlan: { waitSeconds: 3 },
+		silenceTimeoutSeconds: 80,
+		maxDurationSeconds: 900,
+		startSpeakingPlan: {
+			waitSeconds: 2,
+			smartEndpointingPlan: { provider: "livekit" },
+		},
+		endCallPhrases: [
+			"Thank you for your time. Your feedback will be returned right now.",
+			"Thank you for participating in the IELTS Speaking Test. Your feedback will be provided shortly.",
+		],
 		model: {
 			provider: "openai",
 			model: "gpt-4",
@@ -79,7 +56,7 @@ export const configureAssistantFull = (voice: string, style: string) => {
                     Part 3: Discussion (4-5 minutes)
 
                     On part 1, ask the folliwing questions: {{questions_part1}}
-                    On part 2, ask the candidate to speak for 1-2 minutes on the following topic: {{questions_part2}}. They will have 1 minute to prepare and the cue card will be provided. Say you will have 1 minute to prepare and wait for 1 minute before asking the candidate to start speaking. If the candidate speaks for more than 2 minutes, politely interrupt them.
+                    On part 2, ask the candidate to speak for 1-2 minutes on the following topic: {{questions_part2}}. They will have 1 minute to prepare and the cue card will be provided. Say you will have 1 minute to prepare and wait for 1 minute before asking the candidate to start speaking. <Wait 1 minute> and after 1 minute say please start speaking now. If the candidate speaks for more than 2 minutes, politely interrupt them.
                     On part 3, ask the candidate to discuss the topic in more detail with the following questions: {{questions_part3}}. This part should last about 4-5 minutes. If time runs out, politely inform the candidate that the test is over.
 
                     Engage naturally & react appropriately:
@@ -119,7 +96,7 @@ export const configureAssistantPart1 = (voice: string, style: string) => {
 	const examiner: CreateAssistantDTO = {
 		name: "Examiner",
 		firstMessage:
-			"Hello! Welcome to IELTS Speaking Test. My name is WiseAI, and I will be your examiner today. Let's talk about {{firstTopic}}.",
+			"Hello! Welcome to IELTS Speaking Test. My name is Wise AI, and I will be your examiner today. Let's talk about {{firstTopic}}.",
 		transcriber: {
 			provider: "deepgram",
 			model: "nova-3",
@@ -134,7 +111,16 @@ export const configureAssistantPart1 = (voice: string, style: string) => {
 			style: 0.5,
 			useSpeakerBoost: true,
 		},
-		startSpeakingPlan: { waitSeconds: 3 },
+		silenceTimeoutSeconds: 80,
+		maxDurationSeconds: 900,
+		startSpeakingPlan: {
+			waitSeconds: 2,
+			smartEndpointingPlan: { provider: "livekit" },
+		},
+		endCallPhrases: [
+			"Thank you for your time. Your feedback will be returned right now.",
+			"Thank you for participating in the IELTS Speaking Test. Your feedback will be provided shortly.",
+		],
 		model: {
 			provider: "openai",
 			model: "gpt-4",
@@ -187,7 +173,7 @@ export const configureAssistantPart2and3 = (voice: string, style: string) => {
 	const examiner: CreateAssistantDTO = {
 		name: "Examiner",
 		firstMessage:
-			"Hello! Welcome to IELTS Speaking Test. My name is WiseAI, and I will be your examiner today. Let's talk about {{firstTopic}}.",
+			"Hello! Welcome to IELTS Speaking Test. My name is Wise AI, and I will be your examiner today. Let's talk about {{firstTopic}}.",
 		transcriber: {
 			provider: "deepgram",
 			model: "nova-3",
@@ -202,7 +188,16 @@ export const configureAssistantPart2and3 = (voice: string, style: string) => {
 			style: 0.5,
 			useSpeakerBoost: true,
 		},
-		startSpeakingPlan: { waitSeconds: 3 },
+		silenceTimeoutSeconds: 80,
+		maxDurationSeconds: 900,
+		startSpeakingPlan: {
+			waitSeconds: 2,
+			smartEndpointingPlan: { provider: "livekit" },
+		},
+		endCallPhrases: [
+			"Thank you for your time. Your feedback will be returned right now.",
+			"Thank you for participating in the IELTS Speaking Test. Your feedback will be provided shortly.",
+		],
 		model: {
 			provider: "openai",
 			model: "gpt-4",
@@ -217,7 +212,7 @@ export const configureAssistantPart2and3 = (voice: string, style: string) => {
                     Part 1: Long Turn (1-2 minutes speaking after 1 minute preparation)
                     Part 2: Discussion (4-5 minutes)
 
-                    On part 1, ask the candidate to speak for 1-2 minutes on the following topic: {{questions_part2}}. They will have 1 minute to prepare and the cue card will be provided. Say you will have 1 minute to prepare and wait for 1 minute before asking the candidate to start speaking. If the candidate speaks for more than 2 minutes, politely interrupt them.
+                    On part 1, ask the candidate to speak for 1-2 minutes on the following topic: {{questions_part2}}. They will have 1 minute to prepare and the cue card will be provided. Say you will have 1 minute to prepare and wait for 1 minute before asking the candidate to start speaking. <Wait 1 minute>. If the candidate speaks for more than 2 minutes, politely interrupt them.
                     On part 2, ask the candidate to discuss the topic in more detail with the following questions: {{questions_part3}}. This part should last about 4-5 minutes. If time runs out, politely inform the candidate that the test is over.
 
                     Engage naturally & react appropriately:

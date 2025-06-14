@@ -11,9 +11,12 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import soundwaves from "@/constants/soundwaves.json";
+import loadingSpinner from "@/constants/loading.json";
 import { useRouter } from "next/navigation";
 import DropDownMenu from "./DropDownMenu";
 import { createFeedback } from "@/lib/actions/test.action";
+import { TestPart } from "@/app/(root)/take-tests/speaking/[id]/page";
+import { toast } from "sonner";
 
 enum CallStatus {
 	INACTIVE = "INACTIVE",
@@ -31,22 +34,16 @@ const SpeakingComponent = ({
 	questions,
 	topics,
 	mode,
-}: {
-	userId: string;
-	userName: string;
-	userImage: string;
-	setId: string;
-	firstPartId: string;
-	questions: FullTestQuestions;
-	topics: string[];
-	mode: TestMode;
-}) => {
+	setTestPart,
+}: SpeakingComponentProps) => {
 	const [callStatus, setCallStatus] = useState<CallStatus>(
 		CallStatus.INACTIVE
 	);
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 	const [isMuted, setIsMuted] = useState<boolean>(false);
 	const [readyState, setReadyState] = useState<boolean>(false); // Waiting for questions to be loaded
+	const [isGeneratingFeedback, setIsGeneratingFeedback] =
+		useState<boolean>(false);
 
 	const [messages, setMessages] = useState<SavedMessage[]>([]);
 	const [cueCard, setCueCard] = useState<CueCard>();
@@ -116,6 +113,21 @@ const SpeakingComponent = ({
 		};
 	}, []);
 
+	useEffect(() => {
+		if (
+			messages[0]?.role === "assistant" &&
+			messages[0].content.includes("part 2")
+		) {
+			setTestPart(TestPart.part2);
+		}
+		if (
+			messages[0]?.role === "assistant" &&
+			messages[0].content.includes("part 3")
+		) {
+			setTestPart(TestPart.part3);
+		}
+	}, [messages, setTestPart]);
+
 	const handleGenerateFeedback = async (messsages: SavedMessage[]) => {
 		console.log("Generate feedback with messages:", messsages);
 
@@ -131,12 +143,16 @@ const SpeakingComponent = ({
 		} else {
 			console.log("Failed to generate feedback");
 			router.push("/take-tests/speaking");
+			toast("Failed to generate feedback");
 		}
 	};
 
 	useEffect(() => {
 		if (callStatus === CallStatus.FINISHED) {
-			handleGenerateFeedback(messages);
+			setIsGeneratingFeedback(true);
+			handleGenerateFeedback(messages).finally(() => {
+				setIsGeneratingFeedback(false);
+			});
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [messages, callStatus]);
@@ -327,6 +343,20 @@ const SpeakingComponent = ({
 					}
 				/>
 			</div>
+			{isGeneratingFeedback && (
+				<div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/30">
+					<div className="flex flex-col items-center">
+						<Lottie
+							animationData={loadingSpinner}
+							loop
+							className="w-32 h-32"
+						/>
+						<p className="mt-4 text-lg text-gray-800 font-semibold">
+							Generating feedback...
+						</p>
+					</div>
+				</div>
+			)}
 		</section>
 	);
 };

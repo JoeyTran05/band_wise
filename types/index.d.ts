@@ -13,18 +13,6 @@ interface Feedback {
 	created_at: string;
 }
 
-// interface Interview {
-//   id: string;
-//   role: string;
-//   level: string;
-//   questions: string[];
-//   techstack: string[];
-//   createdAt: string;
-//   userId: string;
-//   type: string;
-//   finalized: boolean;
-// }
-
 interface CreateFeedbackParams {
 	userId: string;
 	testId: string;
@@ -32,30 +20,6 @@ interface CreateFeedbackParams {
 	transcript: { role: string; content: string }[];
 	feedbackId?: string;
 }
-
-// interface User {
-//   name: string;
-//   email: string;
-//   id: string;
-// }
-
-// interface InterviewCardProps {
-//   interviewId?: string;
-//   userId?: string;
-//   role: string;
-//   type: string;
-//   techstack: string[];
-//   createdAt?: string;
-// }
-
-// interface AgentProps {
-//   userName: string;
-//   userId?: string;
-//   interviewId?: string;
-//   feedbackId?: string;
-//   type: "generate" | "interview";
-//   questions?: string[];
-// }
 
 interface RouteParams {
 	params: Promise<Record<string, string>>;
@@ -66,11 +30,6 @@ interface GetFeedbackBySetIdParams {
 	id: string;
 	userId: string;
 }
-
-// interface GetLatestInterviewsParams {
-//   userId: string;
-//   limit?: number;
-// }
 
 interface SignInParams {
 	email: string;
@@ -92,19 +51,6 @@ enum TestMode {
 	PART2AND3 = "part2and3",
 }
 
-// interface InterviewFormProps {
-//   interviewId: string;
-//   role: string;
-//   level: string;
-//   type: string;
-//   techstack: string[];
-//   amount: number;
-// }
-
-// interface TechIconProps {
-//   techStack: string[];
-// }
-
 interface DropDownMenuProps {
 	trigger: React.ReactNode;
 	content: React.ReactNode;
@@ -115,6 +61,18 @@ interface FeatureCardProps {
 	title: string;
 	description: string;
 	icon: LucideIcon;
+}
+
+interface SpeakingComponentProps {
+	userId: string;
+	userName: string;
+	userImage: string;
+	setId: string;
+	firstPartId: string;
+	questions: FullTestQuestions;
+	topics: string[];
+	mode: TestMode;
+	setTestPart: (part: TestPart) => void;
 }
 
 interface FirstPart {

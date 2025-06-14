@@ -10,7 +10,7 @@ export const getRandomPart1Questions = async () => {
 
 	const { count } = await supabase
 		.from("speaking_first_part_sets")
-		.select("*", { count: "exact", head: true });
+		.select("id", { count: "exact", head: true });
 
 	const randomId = Math.floor(Math.random() * (count || 0)) + 1;
 
@@ -30,18 +30,18 @@ export const getRandomPart1Questions = async () => {
 export const getSpeakingSetForUser = async (id: string) => {
 	const supabase = createSupabaseClient();
 
-	// Fetching part 1 questions from a random set
 	const questions_part1 = await getRandomPart1Questions();
 
-	// Fetching the next speaking set for the user
-	const { data: questions, error: questionsError } = await supabase
+	const { data: questions, error } = await supabase
 		.from("speaking_sets")
 		.select("id, order_id, topic, cue_card, questions")
 		.eq("id", id)
 		.single();
 
-	if (questionsError) {
-		throw new Error(questionsError.message);
+	if (error || !questions) {
+		throw new Error(
+			error?.message || "No speaking set found for the given ID"
+		);
 	}
 
 	return {
@@ -57,40 +57,58 @@ export const getSpeakingSetForUser = async (id: string) => {
 export const getUniqueCompletedCount = async (userId: string) => {
 	const supabase = createSupabaseClient();
 
-	const { data: completedResults, error: completedError } = await supabase
+	const { data: completedResults, error } = await supabase
 		.from("speaking_results")
-		.select("*")
+		.select("set_id_second")
 		.eq("user_id", userId);
 
-	const uniqueResults = Array.from(
-		new Set(completedResults?.map((result) => result.set_id_second))
+	if (error || !completedResults) {
+		console.error("Failed to fetch speaking results:", error?.message);
+		return 0;
+	}
+
+	const uniqueResults = new Set(
+		completedResults.map((result) => result.set_id_second)
 	);
 
-	if (completedError) return 0;
-
-	return uniqueResults?.length;
+	return uniqueResults.size;
 };
 
-export const getRandomSetId = async () => {
-	// !! implement get random ID but ensure it is unique and not already completed by the user !!
-
+export const getRandomSetId = async (userId: string) => {
 	const supabase = createSupabaseClient();
 
-	const { count } = await supabase
+	// 1. Get completed set IDs
+	const { data: completed, error: completedError } = await supabase
+		.from("speaking_results")
+		.select("set_id_second")
+		.eq("user_id", userId);
+
+	if (completedError) {
+		throw new Error(
+			completedError?.message || "Error fetching completed sets"
+		);
+	}
+
+	const completedIds = new Set(completed?.map((r) => r.set_id_second));
+
+	// 2. Get all available sets
+	const { data: sets, error: setsError } = await supabase
 		.from("speaking_sets")
-		.select("*", { count: "exact", head: true });
+		.select("id, order_id");
 
-	const randomId = Math.floor(Math.random() * (count || 0)) + 1;
+	if (setsError || !sets || sets.length === 0) {
+		throw new Error(setsError?.message || "No speaking sets available");
+	}
 
-	const { data: set, error } = await supabase
-		.from("speaking_sets")
-		.select("id, order_id")
-		.eq("order_id", randomId)
-		.single();
+	// 3. Filter out completed ones
+	const uncompletedSets = sets.filter((set) => !completedIds.has(set.id));
 
-	if (error || !set) throw new Error(error?.message || "Set not found");
+	if (uncompletedSets.length === 0) {
+		throw new Error("All speaking sets have been completed");
+	}
 
-	return set.id;
+	const randomIndex = Math.floor(Math.random() * uncompletedSets.length);
+	return uncompletedSets[randomIndex].id;
 };
 
 export const getSpeakingTopicAndId = async () => {
@@ -104,19 +122,17 @@ export const getSpeakingTopicAndId = async () => {
 		throw new Error(error?.message || "No speaking sets found");
 	}
 
-	const uniqueSetsMap = new Map();
-
-	for (const set of sets) {
-		if (!uniqueSetsMap.has(set.topic)) {
-			uniqueSetsMap.set(set.topic, set); // keep the full set object
+	// Use a Map to ensure uniqueness by topic
+	const uniqueTopicsMap = new Map<string, { id: string; topic: string }>();
+	sets.forEach((set) => {
+		if (!uniqueTopicsMap.has(set.topic)) {
+			uniqueTopicsMap.set(set.topic, set);
 		}
-	}
-
-	const uniqueSets = Array.from(uniqueSetsMap.values());
+	});
 
 	return {
 		topics: sets,
-		uniqueTopics: uniqueSets,
+		uniqueTopics: Array.from(uniqueTopicsMap.values()),
 	};
 };
 
@@ -156,6 +172,8 @@ export const createFeedback = async (params: CreateFeedbackParams) => {
         - **Grammatical Range and Accuracy**: accurate and appropriate use of syntactic forms in order to meet Speaking test requirements, and to the test taker’s range of grammatical resources, 
 a feature which will help to determine the complexity of propositions which can be expressed.
         - **Pronunciation**: accurate and sustained use of a range of phonological features to convey meaningful messages.
+		If the candidate did not answer anything in the transcript, return 0 for all categories.
+		If the candidate did not answer a part of the test, reduce 2 points from the total score.
         `,
 			system: "You are a professional IELTS examiner analyzing an IELTS mock speaking test. Your task is to evaluate the candidate based on structured categories",
 		});
