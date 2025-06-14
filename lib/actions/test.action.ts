@@ -4,6 +4,7 @@ import { feedbackSchema } from "@/constants";
 import { createSupabaseClient } from "../supabase";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
+import { format, subDays, addDays } from "date-fns";
 
 export const getRandomPart1Questions = async () => {
 	const supabase = createSupabaseClient();
@@ -223,13 +224,11 @@ export const getFeedbackById = async (params: GetFeedbackBySetIdParams) => {
 	return data as Feedback;
 };
 
-// lib/data.ts or wherever you keep your data fetching functions
 export const getDailySpeakingBands = async (userId: string) => {
 	const supabase = createSupabaseClient();
 
 	const today = new Date();
-	const sevenDaysAgo = new Date(today);
-	sevenDaysAgo.setDate(today.getDate() - 6); // Includes today
+	const sevenDaysAgo = subDays(today, 6);
 
 	const { data, error } = await supabase
 		.from("speaking_results")
@@ -237,27 +236,41 @@ export const getDailySpeakingBands = async (userId: string) => {
 		.eq("user_id", userId)
 		.gte("created_at", sevenDaysAgo.toISOString());
 
-	if (error || !data) {
-		throw new Error(
-			error?.message || "Failed to fetch daily speaking bands"
-		);
+	if (error || !data) return [];
+
+	// Group scores by date
+	const scoreMap = new Map<string, number[]>();
+	for (const result of data) {
+		const day = format(new Date(result.created_at), "yyyy-MM-dd");
+		if (!scoreMap.has(day)) scoreMap.set(day, []);
+		scoreMap.get(day)!.push(result.total_score);
 	}
 
-	const dailyMap = new Map<string, number[]>();
+	// Fill in 7 days with band scores (carrying forward last known)
+	const filledData: { day: string; band: number; target: number }[] = [];
+	let lastKnownScore: number = 0;
+	const target = 7;
 
-	for (const entry of data) {
-		const date = new Date(entry.created_at);
-		const day = date.toISOString().split("T")[0];
+	for (let i = 0; i < 7; i++) {
+		const date = addDays(sevenDaysAgo, i);
+		const key = format(date, "yyyy-MM-dd");
+		const display = format(date, "MMM d");
 
-		if (!dailyMap.has(day)) dailyMap.set(day, []);
-		dailyMap.get(day)!.push(entry.total_score);
+		const scores = scoreMap.get(key);
+		if (scores && scores.length > 0) {
+			const avg = parseFloat(
+				(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)
+			);
+			lastKnownScore = avg;
+			filledData.push({ day: display, band: avg, target: target });
+		} else {
+			filledData.push({
+				day: display,
+				band: lastKnownScore,
+				target: target,
+			});
+		}
 	}
 
-	return Array.from(dailyMap.entries())
-		.sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-		.map(([day, scores]) => ({
-			day,
-			band: +(scores.reduce((a, b) => a + b) / scores.length).toFixed(2),
-			target: 7,
-		}));
+	return filledData;
 };

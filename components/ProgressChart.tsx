@@ -7,18 +7,19 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { Skeleton } from "@/components/ui/skeleton"; // Import from shadcn
 import { getDailySpeakingBands } from "@/lib/actions/test.action";
 
 const chartConfig = {
 	band: {
 		label: "Actual Band",
-		color: "#ef4444", // Tailwind red-500
+		color: "#ef4444",
 	},
 	target: {
 		label: "Target Band",
-		color: "#9ca3af", // Tailwind gray-400
+		color: "#9ca3af",
 	},
 } satisfies ChartConfig;
 
@@ -27,17 +28,28 @@ const ProgressChart = () => {
 	const [chartData, setChartData] = useState<
 		{ day: string; band: number; target: number }[]
 	>([]);
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		const fetchData = async () => {
 			if (!user?.id) return;
 
+			setLoading(true);
 			const data = await getDailySpeakingBands(user.id);
 			setChartData(data);
+			setLoading(false);
 		};
 
 		fetchData();
 	}, [user]);
+
+	if (loading) {
+		return (
+			<div className="w-full lg:h-64 md:h-64">
+				<Skeleton className="w-full h-full rounded-md" />
+			</div>
+		);
+	}
 
 	return (
 		<div className="w-full lg:h-64 md:h-64 text-sm">
@@ -49,17 +61,17 @@ const ProgressChart = () => {
 					<CartesianGrid
 						vertical={false}
 						strokeDasharray="3 3"
-						stroke="#374151" // Tailwind gray-700
+						stroke="#374151"
 					/>
 					<XAxis
 						dataKey="day"
 						tickLine={false}
 						axisLine={false}
-						tick={{ fill: "#9ca3af" }} // gray-400
+						tick={{ fill: "#9ca3af" }}
 						tickMargin={8}
 					/>
 					<YAxis
-						domain={[4, 9]} // Adjusted to fit band scores
+						domain={[4, 9]}
 						tickCount={6}
 						tickLine={false}
 						axisLine={false}
@@ -74,6 +86,8 @@ const ProgressChart = () => {
 						stroke="#ef4444"
 						strokeWidth={2}
 						dot
+						connectNulls={false}
+						isAnimationActive={false}
 					/>
 					<Line
 						type="monotone"
