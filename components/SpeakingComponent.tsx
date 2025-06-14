@@ -34,7 +34,7 @@ const SpeakingComponent = ({
 	questions,
 	topics,
 	mode,
-	setTestPart,
+	setTestPart, // FIX ERROR TOO MANY ENUM
 }: SpeakingComponentProps) => {
 	const [callStatus, setCallStatus] = useState<CallStatus>(
 		CallStatus.INACTIVE

@@ -222,3 +222,42 @@ export const getFeedbackById = async (params: GetFeedbackBySetIdParams) => {
 
 	return data as Feedback;
 };
+
+// lib/data.ts or wherever you keep your data fetching functions
+export const getDailySpeakingBands = async (userId: string) => {
+	const supabase = createSupabaseClient();
+
+	const today = new Date();
+	const sevenDaysAgo = new Date(today);
+	sevenDaysAgo.setDate(today.getDate() - 6); // Includes today
+
+	const { data, error } = await supabase
+		.from("speaking_results")
+		.select("created_at, total_score")
+		.eq("user_id", userId)
+		.gte("created_at", sevenDaysAgo.toISOString());
+
+	if (error || !data) {
+		throw new Error(
+			error?.message || "Failed to fetch daily speaking bands"
+		);
+	}
+
+	const dailyMap = new Map<string, number[]>();
+
+	for (const entry of data) {
+		const date = new Date(entry.created_at);
+		const day = date.toISOString().split("T")[0];
+
+		if (!dailyMap.has(day)) dailyMap.set(day, []);
+		dailyMap.get(day)!.push(entry.total_score);
+	}
+
+	return Array.from(dailyMap.entries())
+		.sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+		.map(([day, scores]) => ({
+			day,
+			band: +(scores.reduce((a, b) => a + b) / scores.length).toFixed(2),
+			target: 7,
+		}));
+};
