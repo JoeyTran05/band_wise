@@ -42,12 +42,14 @@ const SpeakingComponent = ({
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 	const [isMuted, setIsMuted] = useState<boolean>(false);
 	const [readyState, setReadyState] = useState<boolean>(false); // Waiting for questions to be loaded
-	const [isPlanning, setIsPlanning] = useState<boolean>(false);
+	const [isPartTwo, setIsPartTwo] = useState<boolean>(false);
 	const [isGeneratingFeedback, setIsGeneratingFeedback] =
 		useState<boolean>(false);
 
 	const [messages, setMessages] = useState<SavedMessage[]>([]);
 	const [cueCard, setCueCard] = useState<CueCard>();
+
+	const [showEndPrompt, setShowEndPrompt] = useState(false);
 
 	const lottieRef = useRef<LottieRefCurrentProps>(null);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -116,40 +118,50 @@ const SpeakingComponent = ({
 	}, []);
 
 	useEffect(() => {
-		if (
-			messages[0]?.role === "assistant" &&
-			messages[0].content.includes("part 2")
-		) {
-			setTestPart(TestPart.part2);
-			setIsPlanning(true);
-		}
-		if (
-			messages[0]?.role === "assistant" &&
-			messages[0].content.includes("part 3")
-		) {
-			setTestPart(TestPart.part3);
+		const role = messages[0]?.role;
+		const content = messages[0]?.content.toLowerCase();
+		console.log(content);
+
+		if (role === "assistant") {
+			if (content.includes("part 2")) {
+				setTestPart(TestPart.part2);
+				setIsPartTwo(true);
+				console.log(isPartTwo);
+			} else if (content.includes("part 3")) {
+				setTestPart(TestPart.part3);
+				setIsPartTwo(false);
+			}
 		}
 
-		if (isPlanning) {
-			if (
-				messages[0]?.role === "assistant" &&
-				messages[0].content.includes("when you're ready")
-			) {
+		if (isPartTwo) {
+			if (role === "assistant" && content.includes("when you're ready")) {
 				startPlanningPhase();
 			}
-			console.log("isPlanning:", isPlanning);
 			if (
-				messages[0]?.role === "user" &&
-				(messages[0].content.includes("i'm ready") ||
-					messages[0].content.includes("im ready") ||
-					messages[0].content.includes("ready"))
+				role === "user" &&
+				(content.includes("i'm ready") ||
+					content.includes("im ready") ||
+					content.includes("ready"))
 			) {
-				setIsPlanning(false);
 				if (timeoutRef.current) clearTimeout(timeoutRef.current);
 				vapi.say("Please start speaking now.");
 			}
 		}
-	}, [messages, setTestPart, isPlanning]);
+
+		// if (
+		// 	role === "assistant" &&
+		// 	content.includes("thank you") &&
+		// 	content.includes("your feedback")
+		// ) {
+		// 	setTimeout(() => {
+		// 		handleDisconnect();
+		// 	}, 2000);
+		// }
+
+		if (role === "assistant" && content.includes("concludes the ielts")) {
+			setShowEndPrompt(true);
+		}
+	}, [messages, setTestPart, isPartTwo]);
 
 	const handleGenerateFeedback = async (messsages: SavedMessage[]) => {
 		console.log("Generate feedback with messages:", messsages);
@@ -185,7 +197,6 @@ const SpeakingComponent = ({
 
 		// start 1-minute timer
 		timeoutRef.current = setTimeout(() => {
-			setIsPlanning(false);
 			vapi.say("Please start speaking now.");
 		}, 60000);
 	};
@@ -297,6 +308,12 @@ const SpeakingComponent = ({
 						</div>
 					</div>
 					<p className="font-bold text-2xl">Speaking AI Examiner</p>
+					{showEndPrompt && (
+						<p className="mt-2 text-sm text-yellow-600 animate-pulse font-medium">
+							The test is finished. Please click &quot;End
+							Session&quot; to complete.
+						</p>
+					)}
 				</div>
 
 				<div className="user-section">
@@ -336,8 +353,12 @@ const SpeakingComponent = ({
 								: "bg-primary",
 							callStatus === CallStatus.CONNECTING &&
 								"animate-pulse",
+							callStatus === CallStatus.INACTIVE &&
+								readyState &&
+								"glow-pulse",
 							!readyState &&
-								"bg-gray-400 cursor-not-allowed opacity-70"
+								"bg-gray-400 cursor-not-allowed opacity-70",
+							showEndPrompt && "glow-pulse"
 						)}
 						onClick={
 							callStatus === CallStatus.ACTIVE
@@ -356,6 +377,7 @@ const SpeakingComponent = ({
 			{/*TODO: Fix that for every part 2 questions the cue card displays correctly*/}
 			<div className="mt-6 px-4 bg-blue-50 rounded-md text-sm text-blue-900">
 				<DropDownMenu
+					value={isPartTwo ? "item-1" : ""}
 					trigger={
 						<h3 className="font-semibold mb-2">Part 2 Cue Card</h3>
 					}

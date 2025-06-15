@@ -215,6 +215,8 @@ export const getFeedbackById = async (params: GetFeedbackBySetIdParams) => {
 		.select("*")
 		.eq("set_id_second", id)
 		.eq("user_id", userId)
+		.order("created_at", { ascending: false })
+		.limit(1)
 		.single();
 
 	if (error || !data) {

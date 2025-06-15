@@ -134,7 +134,7 @@ const Page = async ({ params }: RouteParams) => {
 				</Button>
 				<Button variant="default" className="w-full sm:w-1/2">
 					<Link
-						href={`/take-tests/speaking/${id}`}
+						href={`/take-tests/speaking`}
 						className="w-full text-center"
 					>
 						Retake Test
