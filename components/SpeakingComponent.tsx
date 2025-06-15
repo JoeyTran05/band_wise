@@ -42,6 +42,7 @@ const SpeakingComponent = ({
 	const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 	const [isMuted, setIsMuted] = useState<boolean>(false);
 	const [readyState, setReadyState] = useState<boolean>(false); // Waiting for questions to be loaded
+	const [isPlanning, setIsPlanning] = useState<boolean>(false);
 	const [isGeneratingFeedback, setIsGeneratingFeedback] =
 		useState<boolean>(false);
 
@@ -49,6 +50,7 @@ const SpeakingComponent = ({
 	const [cueCard, setCueCard] = useState<CueCard>();
 
 	const lottieRef = useRef<LottieRefCurrentProps>(null);
+	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	const router = useRouter();
 
@@ -119,6 +121,7 @@ const SpeakingComponent = ({
 			messages[0].content.includes("part 2")
 		) {
 			setTestPart(TestPart.part2);
+			setIsPlanning(true);
 		}
 		if (
 			messages[0]?.role === "assistant" &&
@@ -126,7 +129,27 @@ const SpeakingComponent = ({
 		) {
 			setTestPart(TestPart.part3);
 		}
-	}, [messages, setTestPart]);
+
+		if (isPlanning) {
+			if (
+				messages[0]?.role === "assistant" &&
+				messages[0].content.includes("when you're ready")
+			) {
+				startPlanningPhase();
+			}
+			console.log("isPlanning:", isPlanning);
+			if (
+				messages[0]?.role === "user" &&
+				(messages[0].content.includes("i'm ready") ||
+					messages[0].content.includes("im ready") ||
+					messages[0].content.includes("ready"))
+			) {
+				setIsPlanning(false);
+				if (timeoutRef.current) clearTimeout(timeoutRef.current);
+				vapi.say("Please start speaking now.");
+			}
+		}
+	}, [messages, setTestPart, isPlanning]);
 
 	const handleGenerateFeedback = async (messsages: SavedMessage[]) => {
 		console.log("Generate feedback with messages:", messsages);
@@ -156,6 +179,16 @@ const SpeakingComponent = ({
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [messages, callStatus]);
+
+	const startPlanningPhase = async () => {
+		if (!vapi) return;
+
+		// start 1-minute timer
+		timeoutRef.current = setTimeout(() => {
+			setIsPlanning(false);
+			vapi.say("Please start speaking now.");
+		}, 60000);
+	};
 
 	const toggleMicrophone = () => {
 		const isMuted = vapi.isMuted();
@@ -244,7 +277,7 @@ const SpeakingComponent = ({
 								alt="logo"
 								width={150}
 								height={150}
-								className="max-sm:w-fit"
+								className="object-contain p-4 max-sm:p-1"
 							/>
 						</div>
 						<div

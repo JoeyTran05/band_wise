@@ -18,6 +18,12 @@ export enum TestPart {
 	part3 = "Part 3",
 }
 
+enum TestMode {
+	FULL = "full",
+	PART1 = "part1",
+	PART2AND3 = "part2and3",
+}
+
 const testDescriptions = {
 	part1: "Introduction & Interview",
 	part2: "Long Turn — 1-minute preparation, 1–2 minutes speaking",
@@ -34,7 +40,7 @@ const SpeakingTestSession = ({
 
 	const [id, setId] = useState<string>("");
 	const [firstPartId, setFirstPartId] = useState<string>("");
-	const [mode, setMode] = useState<TestMode>();
+	const [mode, setMode] = useState<TestMode>(TestMode.FULL);
 
 	const { user, isSignedIn } = useUser();
 
@@ -43,7 +49,7 @@ const SpeakingTestSession = ({
 
 		const fetchData = async () => {
 			const { id } = await params;
-			const { mode } = (await searchParams) || "full";
+			const { mode } = await searchParams;
 
 			const {
 				firstTopic,
@@ -56,7 +62,7 @@ const SpeakingTestSession = ({
 
 			setId(id);
 			setFirstPartId(firstPartId);
-			setMode(mode.toLowerCase() as TestMode);
+			setMode(mode?.toLowerCase() as TestMode);
 			setTopics([firstTopic, secondTopic]);
 			setQuestions({ part1: part1, part2: part2, part3: part3 });
 

@@ -352,8 +352,9 @@
 	}
 
 	.speaking-avatar {
-		@apply size-[300px] flex items-center justify-center rounded-lg max-sm:size-[100px] mt-4;
+		@apply relative w-[300px] h-[300px] flex items-center justify-center rounded-lg mt-4 max-sm:w-[100px] max-sm:h-[100px];
 	}
+
 	.speaking-lottie {
 		@apply size-[300px] max-sm:size-[100px];
 	}

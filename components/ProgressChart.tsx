@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Skeleton } from "@/components/ui/skeleton"; // Import from shadcn
+import { Skeleton } from "@/components/ui/skeleton";
 import { getDailySpeakingBands } from "@/lib/actions/test.action";
 
 const chartConfig = {

@@ -246,6 +246,10 @@ export const getDailySpeakingBands = async (userId: string) => {
 		scoreMap.get(day)!.push(result.total_score);
 	}
 
+	const roundToNearestHalf = (num: number): number => {
+		return Math.round(num * 2) / 2;
+	};
+
 	// Fill in 7 days with band scores (carrying forward last known)
 	const filledData: { day: string; band: number; target: number }[] = [];
 	let lastKnownScore: number = 0;
@@ -258,17 +262,12 @@ export const getDailySpeakingBands = async (userId: string) => {
 
 		const scores = scoreMap.get(key);
 		if (scores && scores.length > 0) {
-			const avg = parseFloat(
-				(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)
-			);
-			lastKnownScore = avg;
-			filledData.push({ day: display, band: avg, target: target });
+			const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+			const rounded = roundToNearestHalf(avg);
+			lastKnownScore = rounded;
+			filledData.push({ day: display, band: rounded, target });
 		} else {
-			filledData.push({
-				day: display,
-				band: lastKnownScore,
-				target: target,
-			});
+			filledData.push({ day: display, band: lastKnownScore, target });
 		}
 	}
 

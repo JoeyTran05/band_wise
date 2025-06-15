@@ -45,12 +45,6 @@ interface SignUpParams {
 
 type FormType = "sign-in" | "sign-up";
 
-enum TestMode {
-	FULL = "full",
-	PART1 = "part1",
-	PART2AND3 = "part2and3",
-}
-
 interface DropDownMenuProps {
 	trigger: React.ReactNode;
 	content: React.ReactNode;
